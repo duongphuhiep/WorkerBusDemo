@@ -1,0 +1,5 @@
+@BaseUrl = http://localhost:5251
+
+POST {{BaseUrl}}/deployment/platform/PLF/environment/DEV/async
+
+###
