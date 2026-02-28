@@ -1,5 +1,22 @@
 @BaseUrl = http://localhost:5251
 
-POST {{BaseUrl}}/deployment/platform/PLF/environment/DEV/async
+### DeploySync 1
 
-###
+POST {{BaseUrl}}/deployment/platform/PLF1/environment/STAGING/sync
+
+### DeploySync 2
+
+POST {{BaseUrl}}/deployment/platform/PLF2/environment/STAGING/sync
+
+### DeployAsync 1
+
+POST {{BaseUrl}}/deployment/platform/PLF1/environment/DEV1/async
+
+### DeployAsync 2
+
+POST {{BaseUrl}}/deployment/platform/PLF2/environment/DEV2/async
+
+### DeployAsync 3
+
+POST {{BaseUrl}}/deployment/platform/PLF3/environment/DEV3/async
+

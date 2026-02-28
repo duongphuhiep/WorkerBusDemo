@@ -1,0 +1,58 @@
+@ExternalApi_HostAddress = http://localhost:5106
+
+### GetBearerToken
+
+GET {{ExternalApi_HostAddress}}/bearerToken/PLF1/DEV
+Accept: text/plain
+User-Agent: ExternalApiConnector/1.0
+
+### CreatePendingProduct
+
+PUT {{ExternalApi_HostAddress}}/product
+Accept: application/json
+Content-Type: application/json
+User-Agent: ExternalApiService/2.0
+Authorization: bearer token.PLF1.DEV
+
+{
+  "PlatformId": "PLF1",
+  "EnvironmentId": "DEV"
+}
+
+### GetPendingProduct
+
+POST {{ExternalApi_HostAddress}}/queryPendingProduct/CAR02
+Accept: application/json
+Content-Type: application/json
+User-Agent: ExternalApiService/2.0
+Authorization: bearer token.PLF1.DEV
+
+{
+  "PlatformId": "PLF1",
+  "EnvironmentId": "DEV"
+}
+
+### DeployProduct
+
+POST {{ExternalApi_HostAddress}}/deploy
+Accept: application/json
+Content-Type: application/json
+User-Agent: ExternalApiService/2.0
+Authorization: bearer token.PLF1.DEV
+
+{
+  "clientContext": {
+    "platformId": "PLF1",
+    "environmentId": "DEV"
+  },
+  "product": {
+    "bearerToken": "bearer token.PLF1.DEV",
+    "clientContext": {
+      "platformId": "PLF1",
+      "environmentId": "DEV"
+    },
+    "productId": "CAR01"
+  }
+}
+
+
