@@ -48,9 +48,9 @@ public static class Extensions
         // });
 
         builder.Services.AddHttpLogging(cfg => cfg.CombineLogs = true);
-        builder.Services.AddLogging(cfg => 
-            cfg.AddConsole().AddSeq("http://seq")
-            );
+        builder.Services.AddLogging(cfg =>
+            cfg.AddConsole()
+            .AddSeq());
 
         return builder;
     }
@@ -86,8 +86,9 @@ public static class Extensions
             });
 
         builder.AddOpenTelemetryExporters();
-        
-        builder.AddSeqEndpoint(connectionName: "seq");
+
+        //Registers OTLP log and trace exporters to send to Seq.
+        //builder.AddSeqEndpoint(connectionName: "seq");
 
         return builder;
     }
