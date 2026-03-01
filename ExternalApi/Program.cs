@@ -1,10 +1,12 @@
 using ExternalApi.Model;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 using ToolsPack.String;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
+builder.Services.AddSerilog();
 
 var app = builder.Build();
 
@@ -18,7 +20,10 @@ app.MapGet("bearerToken/{platformId}/{environmentId}",
     (string platformId, string environmentId, [FromHeader(Name = "user-agent")] string userAgent) =>
     {
         if (userAgent != "ExternalApiConnector/1.0") throw new BadHttpRequestException("UserAgent is invalid");
-
+        if (platformId == "root")
+        {
+            throw new UnauthorizedAccessException("Platform not accessible");
+        }
         return $"token.{platformId}.{environmentId}";
     });
 
@@ -38,6 +43,12 @@ app.MapPut("product", ([FromHeader(Name = "Authorization")] string bearerToken,
         return Results.Unauthorized();
     }
 
+    if (clientContext.EnvironmentId == "readonly")
+    {
+        throw new InvalidOperationException($"Unable to create product for the environment {clientContext.EnvironmentId}");
+    }
+
+    logger.LogInformation("Success createPendingProduct {clientContext}", clientContext);
     return Results.Ok(new Product
     {
         BearerToken = bearerToken,
@@ -61,6 +72,7 @@ app.MapPost("queryPendingProduct/{productId}", ([FromHeader(Name = "Authorizatio
     if (!bearerToken.EndsWith($"token.{clientContext.PlatformId}.{clientContext.EnvironmentId}"))
         return Results.Unauthorized();
 
+    logger.LogInformation("Success query product {productId}", productId);
     return Results.Ok(new Product
     {
         BearerToken = bearerToken,
@@ -96,6 +108,8 @@ app.MapPost("deploy",
         if (product.ClientContext != clientContext)
             throw new BadHttpRequestException("ClientContext of product does not match ClientContext of request");
 
+        logger.LogInformation("Success deployment {deploymentRequest}", deploymentRequest);
+
         return Results.Ok(new DeploymentReport
         {
             BearerToken = bearerToken,
@@ -104,4 +118,4 @@ app.MapPost("deploy",
         });
     });
 
-app.Run();
+await app.RunAsync();

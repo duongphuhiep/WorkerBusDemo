@@ -8,9 +8,13 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using ToolsPack.Config;
 using WorkerBusDemo.ServiceDefaults;
+using Serilog;
+using Serilog.Enrichers.OpenTelemetry;
+using MassTransit.Logging;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -48,14 +52,18 @@ public static class Extensions
         // });
 
         builder.Services.AddHttpLogging(cfg => cfg.CombineLogs = true);
-        builder.Services.AddLogging(cfg =>
-            cfg.AddConsole()
-            .AddSeq());
+
+        Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
+            .Enrich.WithProperty("ApplicationName", builder.Environment.ApplicationName)
+            .CreateLogger();
+        builder.Services.AddLogging(
+            cfg => cfg.AddSerilog()
+        );
 
         return builder;
     }
 
-    public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder)
+    private static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
         builder.Logging.AddOpenTelemetry(logging =>
@@ -65,6 +73,7 @@ public static class Extensions
         });
 
         builder.Services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService(builder.Environment.ApplicationName))
             .WithMetrics(metrics =>
             {
                 metrics.AddAspNetCoreInstrumentation()
@@ -73,10 +82,10 @@ public static class Extensions
             })
             .WithTracing(tracing =>
             {
-                tracing.AddSource(builder.Environment.ApplicationName)
-                    .AddAspNetCoreInstrumentation(tracing =>
+                tracing.AddSource(builder.Environment.ApplicationName, DiagnosticHeaders.DefaultListenerName)
+                    .AddAspNetCoreInstrumentation(instrumentationOptions =>
                         // Exclude health check requests from tracing
-                        tracing.Filter = context =>
+                        instrumentationOptions.Filter = context =>
                             !context.Request.Path.StartsWithSegments(HealthEndpointPath)
                             && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath)
                     )
@@ -114,7 +123,7 @@ public static class Extensions
         return builder;
     }
 
-    public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder)
+    private static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
         builder.Services.AddHealthChecks()

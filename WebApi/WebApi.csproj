@@ -7,13 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.3"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.3" />
+        <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Core\Core.csproj"/>
-        <ProjectReference Include="..\WorkerBusDemo.ServiceDefaults\WorkerBusDemo.ServiceDefaults.csproj"/>
+        <ProjectReference Include="..\Core\Core.csproj" />
+        <ProjectReference Include="..\WorkerBusDemo.ServiceDefaults\WorkerBusDemo.ServiceDefaults.csproj" />
     </ItemGroup>
 
     <ItemGroup>
