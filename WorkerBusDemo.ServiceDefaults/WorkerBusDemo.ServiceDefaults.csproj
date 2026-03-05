@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -7,14 +7,13 @@
         <IsAspireSharedProject>true</IsAspireSharedProject>
         <UserSecretsId>dotnet-Worker-08ac4663-91fe-4ff1-b281-fa8ea05e4e68</UserSecretsId>
     </PropertyGroup>
-
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="Aspire.Seq" Version="13.1.2" />
         <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.1.0" />
         <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="10.1.0" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
-        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
+        <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
         <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
@@ -28,11 +27,21 @@
         <PackageReference Include="MassTransit" Version="8.5.8" />
         <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.5.8" />
         <PackageReference Include="Seq.Extensions.Logging" Version="9.0.0" />
+        <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+        <PackageReference Include="Serilog.Enrichers.OpenTelemetry" Version="1.0.1" />
+        <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+        <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.0" />
+        <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="5.0.0" />
+        <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+        <PackageReference Include="Serilog.Sinks.OpenTelemetry" Version="4.2.0" />
+        <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
+        <PackageReference Include="SerilogTracing" Version="2.3.1" />
+        <PackageReference Include="SerilogTracing.Expressions" Version="2.3.1" />
         <PackageReference Include="ToolsPack.Config" Version="4.0.0" />
     </ItemGroup>
-
     <ItemGroup>
         <ProjectReference Include="..\Core\Core.csproj" />
     </ItemGroup>
-
 </Project>

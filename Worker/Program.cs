@@ -1,4 +1,5 @@
 using Core;
+using Serilog;
 using Worker;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -7,5 +8,6 @@ builder.AddServiceDefaults();
 builder.Services.AddAzureServiceBusMassTransit(builder.Configuration,
     [typeof(DeploymentConsumer)]);
 builder.Services.AddCoreService(builder.Configuration);
+builder.Services.AddSerilog();
 var host = builder.Build();
 await host.RunAsync();

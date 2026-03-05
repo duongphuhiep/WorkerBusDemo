@@ -8,9 +8,13 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using ToolsPack.Config;
 using WorkerBusDemo.ServiceDefaults;
+using Serilog;
+using Serilog.Enrichers.OpenTelemetry;
+using MassTransit.Logging;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -48,9 +52,13 @@ public static class Extensions
         // });
 
         builder.Services.AddHttpLogging(cfg => cfg.CombineLogs = true);
-        builder.Services.AddLogging(cfg =>
-            cfg.AddConsole()
-            .AddSeq());
+
+        Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
+            .Enrich.WithProperty("ApplicationName", builder.Environment.ApplicationName)
+            .CreateLogger();
+        builder.Services.AddLogging(
+            cfg => cfg.AddSerilog()
+        );
 
         return builder;
     }
@@ -65,6 +73,7 @@ public static class Extensions
         });
 
         builder.Services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService(builder.Environment.ApplicationName))
             .WithMetrics(metrics =>
             {
                 metrics.AddAspNetCoreInstrumentation()
@@ -73,7 +82,7 @@ public static class Extensions
             })
             .WithTracing(tracing =>
             {
-                tracing.AddSource(builder.Environment.ApplicationName)
+                tracing.AddSource(builder.Environment.ApplicationName, DiagnosticHeaders.DefaultListenerName)
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Exclude health check requests from tracing
                         tracing.Filter = context =>
