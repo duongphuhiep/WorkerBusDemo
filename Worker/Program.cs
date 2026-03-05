@@ -8,4 +8,4 @@ builder.Services.AddAzureServiceBusMassTransit(builder.Configuration,
     [typeof(DeploymentConsumer)]);
 builder.Services.AddCoreService(builder.Configuration);
 var host = builder.Build();
-host.Run();
+await host.RunAsync();
