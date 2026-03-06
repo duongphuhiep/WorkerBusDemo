@@ -9,6 +9,7 @@
     </PropertyGroup>
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights" Version="3.1.1" />
         <PackageReference Include="Aspire.Seq" Version="13.1.2" />
         <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.1.0" />
         <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="10.1.0" />

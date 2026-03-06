@@ -63,7 +63,7 @@ public static class Extensions
         return builder;
     }
 
-    public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder)
+    private static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
         builder.Logging.AddOpenTelemetry(logging =>
@@ -83,9 +83,9 @@ public static class Extensions
             .WithTracing(tracing =>
             {
                 tracing.AddSource(builder.Environment.ApplicationName, DiagnosticHeaders.DefaultListenerName)
-                    .AddAspNetCoreInstrumentation(tracing =>
+                    .AddAspNetCoreInstrumentation(instrumentationOptions =>
                         // Exclude health check requests from tracing
-                        tracing.Filter = context =>
+                        instrumentationOptions.Filter = context =>
                             !context.Request.Path.StartsWithSegments(HealthEndpointPath)
                             && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath)
                     )
@@ -123,7 +123,7 @@ public static class Extensions
         return builder;
     }
 
-    public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder)
+    private static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder)
         where TBuilder : IHostApplicationBuilder
     {
         builder.Services.AddHealthChecks()
