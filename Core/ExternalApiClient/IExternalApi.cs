@@ -10,7 +10,7 @@ namespace Core.ExternalApiClient;
 public interface IExternalApiConnector
 {
     [Get("/bearerToken/{platformId}/{environmentId}")]
-    Task<string> GetBearerToken(string platformId, string environmentId);
+    Task<BearerToken> GetBearerToken(string platformId, string environmentId);
 }
 
 [ApiClient("ExternalApi:BaseUrlService",

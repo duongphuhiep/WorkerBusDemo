@@ -3,7 +3,7 @@
 ### GetBearerToken
 
 GET {{ExternalApi_HostAddress}}/bearerToken/PLF1/DEV
-Accept: text/plain
+Accept: application/json
 User-Agent: ExternalApiConnector/1.0
 
 ### CreatePendingProduct
