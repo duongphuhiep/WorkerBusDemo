@@ -1,5 +1,6 @@
 using Core;
 using Serilog;
+using ToolsPack.String;
 using Worker;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -12,5 +13,6 @@ var host = builder.Build();
 
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("Worker starting up...");
+logger.LogWarning("Try to log a very long message that will be truncated: {LongMessage}", StringGenerator.CreateRandomString(200)+"_hiep");
 
 await host.RunAsync();
