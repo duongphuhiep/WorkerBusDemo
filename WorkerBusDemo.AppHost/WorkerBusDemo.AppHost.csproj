@@ -7,8 +7,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Aspire.Hosting.Seq" Version="13.1.2" />
-      <PackageReference Include="Scalar.Aspire" Version="0.9.1" />
+      <PackageReference Include="Aspire.Hosting.Seq" />
+      <PackageReference Include="Scalar.Aspire" />
     </ItemGroup>
 
     <PropertyGroup>
