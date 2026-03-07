@@ -1,6 +1,7 @@
 using Core;
 using Scalar.AspNetCore;
 using Serilog;
+using WebApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,8 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 app.MapDefaultEndpoints();
+
+app.UseMiddleware<UsernameLoggingMiddleware>();
 
 // log incoming request and response time
 app.UseSerilogRequestLogging();
