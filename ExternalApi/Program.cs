@@ -1,25 +1,33 @@
 using ExternalApi.Model;
 using Microsoft.AspNetCore.Mvc;
+using Scalar.AspNetCore;
 using Serilog;
 using ToolsPack.String;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddOpenApi();
-builder.Services.AddSerilog();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment()) app.MapOpenApi();
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
 
 app.UseHttpsRedirection();
+app.UseSerilogRequestLogging(); // logging
 
 //GetBearerToken
 app.MapGet("bearerToken/{platformId}/{environmentId}",
     (string platformId, string environmentId, [FromHeader(Name = "user-agent")] string userAgent) =>
     {
-        if (userAgent != "ExternalApiConnector/1.0") throw new BadHttpRequestException("UserAgent is invalid");
+        if (userAgent != "ExternalApiConnector/1.0")
+        {
+            throw new BadHttpRequestException("UserAgent is invalid");
+        }
         if (platformId == "root")
         {
             throw new UnauthorizedAccessException("Platform not accessible");
@@ -39,7 +47,7 @@ app.MapPut("product", ([FromHeader(Name = "Authorization")] string bearerToken,
 
     if (!bearerToken.EndsWith($"token.{clientContext.PlatformId}.{clientContext.EnvironmentId}"))
     {
-        logger.LogWarning("BearerToken is invalid {bearerToken}", bearerToken);
+        logger.LogWarning("BearerToken is invalid {BearerToken}", bearerToken);
         return Results.Unauthorized();
     }
 
@@ -48,7 +56,7 @@ app.MapPut("product", ([FromHeader(Name = "Authorization")] string bearerToken,
         throw new InvalidOperationException($"Unable to create product for the environment {clientContext.EnvironmentId}");
     }
 
-    logger.LogInformation("Success createPendingProduct {clientContext}", clientContext);
+    logger.LogInformation("Success createPendingProduct {ClientContext}", clientContext);
     return Results.Ok(new Product
     {
         BearerToken = bearerToken,
@@ -65,14 +73,14 @@ app.MapPost("queryPendingProduct/{productId}", ([FromHeader(Name = "Authorizatio
 {
     if (userAgent != "ExternalApiService/2.0")
     {
-        logger.LogWarning("BearerToken is invalid {bearerToken}", bearerToken);
+        logger.LogWarning("BearerToken is invalid {BearerToken}", bearerToken);
         throw new BadHttpRequestException("UserAgent is invalid");
     }
 
     if (!bearerToken.EndsWith($"token.{clientContext.PlatformId}.{clientContext.EnvironmentId}"))
         return Results.Unauthorized();
 
-    logger.LogInformation("Success query product {productId}", productId);
+    logger.LogInformation("Success query product {ProductId}", productId);
     return Results.Ok(new Product
     {
         BearerToken = bearerToken,
@@ -93,14 +101,14 @@ app.MapPost("deploy",
                             throw new BadHttpRequestException("ClientContext is null");
         if (!bearerToken.EndsWith($"token.{clientContext.PlatformId}.{clientContext.EnvironmentId}"))
         {
-            logger.LogWarning("BearerToken is invalid {bearerToken}", bearerToken);
+            logger.LogWarning("BearerToken is invalid {BearerToken}", bearerToken);
             return Results.Unauthorized();
         }
 
         var product = deploymentRequest.Product ?? throw new BadHttpRequestException("Product is null");
         if (bearerToken != product.BearerToken)
         {
-            logger.LogWarning("BearerToken not match product info {bearerToken} != {productBearerToken}", bearerToken,
+            logger.LogWarning("BearerToken not match product info {BearerToken} != {ProductBearerToken}", bearerToken,
                 product.BearerToken);
             return Results.Unauthorized();
         }
@@ -108,7 +116,7 @@ app.MapPost("deploy",
         if (product.ClientContext != clientContext)
             throw new BadHttpRequestException("ClientContext of product does not match ClientContext of request");
 
-        logger.LogInformation("Success deployment {deploymentRequest}", deploymentRequest);
+        logger.LogInformation("Success deployment {DeploymentRequest}", deploymentRequest);
 
         return Results.Ok(new DeploymentReport
         {
