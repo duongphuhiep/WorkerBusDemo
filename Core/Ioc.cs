@@ -22,6 +22,10 @@ public static class Ioc
         services.AddSingleton<ClientContextProvider>();
 
         services.AddScoped<DeploymentHandler>();
+        
+        services.Configure<AzureServiceBusConfig>(
+            configuration.GetSection("AzureServiceBus")
+        );
     }
 
     /// <summary>

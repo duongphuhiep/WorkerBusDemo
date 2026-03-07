@@ -1,3 +1,4 @@
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Core;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
@@ -95,17 +96,15 @@ public static class Extensions
 
         if (useOtlpExporter) builder.Services.AddOpenTelemetry().UseOtlpExporter();
 
-        // Uncomment the following lines to enable the Azure Monitor exporter (requires the Azure.Monitor.OpenTelemetry.AspNetCore package)
-        //if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
-        //{
-        //    builder.Services.AddOpenTelemetry()
-        //       .UseAzureMonitor();
-        //}
-
-        builder.Services.Configure<AzureServiceBusConfig>(
-            builder.Configuration.GetSection("AzureServiceBus")
-        );
-
+        if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
+        {
+            //Send traces and metrics instruments to Azure App Insights.
+            //Note: it won't send Logs instruments. You must still have to configure
+            //the App Insights Sink (WriteTo.ApplicationInsights()) separately.
+            builder.Services.AddOpenTelemetry()
+               .UseAzureMonitor();
+        }
+        
         return builder;
     }
 
@@ -148,6 +147,8 @@ public static class Extensions
         if (environment.IsDevelopment()) configuration.AddUserSecrets<SecretReference>(true);
         configuration.AddEnvironmentVariables();
         configuration.AddCommandLine(args);
+        //it must always be last to support config value substitution (Eg: "${Credentials:Password}") from any sources. 
+        configuration.AddSubstitution();
     }
 
     public static void AddAzureServiceBusMassTransit(
