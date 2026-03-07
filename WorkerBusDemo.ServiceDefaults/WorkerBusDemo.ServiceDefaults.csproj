@@ -11,6 +11,7 @@
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
         <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights" Version="3.1.1" />
         <PackageReference Include="Aspire.Seq" Version="13.1.2" />
+        <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.4.0" />
         <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="10.1.0" />
         <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="10.1.0" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
@@ -42,6 +43,7 @@
         <PackageReference Include="SerilogTracing.Expressions" Version="2.3.1" />
         <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
         <PackageReference Include="ToolsPack.Config" Version="4.0.0" />
+        <PackageReference Include="Workleap.Extensions.Configuration.Substitution" Version="1.2.33" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Core\Core.csproj" />
