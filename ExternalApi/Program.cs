@@ -28,11 +28,17 @@ app.MapGet("bearerToken/{platformId}/{environmentId}",
         {
             throw new BadHttpRequestException("UserAgent is invalid");
         }
+
         if (platformId == "root")
         {
             throw new UnauthorizedAccessException("Platform not accessible");
         }
-        return $"token.{platformId}.{environmentId}";
+
+        return new BearerToken
+        {
+            Token = $"token.{platformId}.{environmentId}",
+            ExpiryAt = DateTimeOffset.UtcNow.AddSeconds(10)
+        };
     });
 
 //CreatePendingProduct
@@ -53,7 +59,8 @@ app.MapPut("product", ([FromHeader(Name = "Authorization")] string bearerToken,
 
     if (clientContext.EnvironmentId == "readonly")
     {
-        throw new InvalidOperationException($"Unable to create product for the environment {clientContext.EnvironmentId}");
+        throw new InvalidOperationException(
+            $"Unable to create product for the environment {clientContext.EnvironmentId}");
     }
 
     logger.LogInformation("Success createPendingProduct {ClientContext}", clientContext);

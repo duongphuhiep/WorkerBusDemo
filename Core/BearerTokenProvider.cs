@@ -8,20 +8,25 @@ public class BearerTokenProvider(
     IExternalApiConnector externalApiConnector,
     ClientContextProvider clientContextProvider)
 {
-    public string? CurrentBearerToken { get; set; }
-
+    //TODO create an in-memory cache, the Key is the ClientContext, the value is the BearerToken.
+    //the cached value must to be expired 2 sec before the bearerToken expired.
+    
     public async Task<string> GetBearerTokenAsync()
     {
         var clientContext = clientContextProvider.CurrentClientContext ??
                             throw new InvalidOperationException("Client context not set");
         
-        //TODO introduce an in-memory cache here for a very short expiration to make sure that the cache expiry before the JWT
-        CurrentBearerToken = await externalApiConnector.GetBearerToken(
+        //TODO check the cache first. return the cached token for the clientContext if exists and not expired.
+        
+        //request a new BearerToken
+        var currentBearerToken = await externalApiConnector.GetBearerToken(
             clientContext.PlatformId ?? throw new InvalidOperationException("PlatformId not set in client, context"),
             clientContext.EnvironmentId ??
             throw new InvalidOperationException("EnvironmentId not set in client, context")
         );
         
-        return CurrentBearerToken;
+        //TODO put it into the cache. Make sure to set the expiration time of the cache entry to be 2 sec before the bearerToken expired.
+        
+        return currentBearerToken.Token;
     }
 }
