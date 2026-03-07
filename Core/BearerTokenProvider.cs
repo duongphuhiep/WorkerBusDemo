@@ -1,4 +1,6 @@
 using Core.ExternalApiClient;
+using Core.ExternalApiClient.Dtos;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace Core;
@@ -8,25 +10,40 @@ public class BearerTokenProvider(
     IExternalApiConnector externalApiConnector,
     ClientContextProvider clientContextProvider)
 {
-    //TODO create an in-memory cache, the Key is the ClientContext, the value is the BearerToken.
-    //the cached value must to be expired 2 sec before the bearerToken expired.
-    
+    private static MemoryCache _Cache = new(new MemoryCacheOptions());
+
     public async Task<string> GetBearerTokenAsync()
     {
         var clientContext = clientContextProvider.CurrentClientContext ??
                             throw new InvalidOperationException("Client context not set");
-        
-        //TODO check the cache first. return the cached token for the clientContext if exists and not expired.
-        
+
+        if (_Cache.TryGetValue<BearerToken>(clientContext, out var cached) && cached is not null)
+        {
+            logger.LogDebug("Cache Hit: Returning cached bearer token for {PlatformId}/{EnvironmentId}",
+                clientContext.PlatformId, clientContext.EnvironmentId);
+            return cached.Token;
+        }
+
         //request a new BearerToken
         var currentBearerToken = await externalApiConnector.GetBearerToken(
             clientContext.PlatformId ?? throw new InvalidOperationException("PlatformId not set in client, context"),
             clientContext.EnvironmentId ??
             throw new InvalidOperationException("EnvironmentId not set in client, context")
         );
-        
-        //TODO put it into the cache. Make sure to set the expiration time of the cache entry to be 2 sec before the bearerToken expired.
-        
+
+        var expirationTime = currentBearerToken.ExpiryAt.AddSeconds(-2);
+        if (expirationTime > DateTimeOffset.UtcNow)
+        {
+            _Cache.Set(clientContext, currentBearerToken, expirationTime);
+            logger.LogDebug("Cached bearer token for {PlatformId}/{EnvironmentId}, expires at {ExpiryAt}",
+                clientContext.PlatformId, clientContext.EnvironmentId, expirationTime);
+        }
+        else
+        {
+            logger.LogWarning("Bearer token for {PlatformId}/{EnvironmentId} expires too soon to cache",
+                clientContext.PlatformId, clientContext.EnvironmentId);
+        }
+
         return currentBearerToken.Token;
     }
 }
