@@ -15,7 +15,7 @@ public static class Ioc
     {
         services.AddExternalApi(configuration);
         
-        //might be created 2 twice for the same request
+        //might be created twice for the same request
         services.AddScoped<BearerTokenProvider>();
 
         //HttpContextAccessor equivalent
@@ -75,10 +75,10 @@ public static class Ioc
                     throw new InvalidOperationException(
                         $"Message handler '{handlerType.FullName}' must inherit from DelegatingHandler.");
                 
-                //the AuthHeaderMiddleware is registered here as transient
+                //note: the AuthHeaderMiddleware is registered here as scoped
                 services.TryAddScoped(handlerType);
                 
-                //the AuthHeaderMiddleware is added to the HttpClient pipeline here.
+                //note: the AuthHeaderMiddleware is added to the HttpClient pipeline here.
                 httpClientBuilder.AddHttpMessageHandler(sp => (DelegatingHandler)sp.GetRequiredService(handlerType));
             }
         }
