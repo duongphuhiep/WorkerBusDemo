@@ -1,4 +1,5 @@
 using Core;
+using Scalar.AspNetCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,12 +10,19 @@ builder.Services.AddAzureServiceBusMassTransit(builder.Configuration, []);
 builder.Services.AddCoreService(builder.Configuration);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
-builder.Services.AddSerilog();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment()) app.MapOpenApi();
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
 app.UseHttpsRedirection();
 app.MapDefaultEndpoints();
+
+// log incoming request and response time
+app.UseSerilogRequestLogging();
+
 app.MapControllers();
 await app.RunAsync();

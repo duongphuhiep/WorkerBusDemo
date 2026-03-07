@@ -33,8 +33,6 @@ public static class Extensions
         builder.AddDefaultHealthChecks();
 
         builder.Services.AddServiceDiscovery();
-        // builder.Services.AddServiceDiscoveryCore();
-        // builder.Services.AddDnsSrvServiceEndpointProvider();
 
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
@@ -45,21 +43,13 @@ public static class Extensions
             http.AddServiceDiscovery();
         });
 
-        // Uncomment the following to restrict the allowed schemes for service discovery.
-        // builder.Services.Configure<ServiceDiscoveryOptions>(options =>
-        // {
-        //     options.AllowedSchemes = ["https"];
-        // });
-
         builder.Services.AddHttpLogging(cfg => cfg.CombineLogs = true);
-
         Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
             .Enrich.WithProperty("ApplicationName", builder.Environment.ApplicationName)
             .CreateLogger();
-        builder.Services.AddLogging(
-            cfg => cfg.AddSerilog()
-        );
-
+        builder.Services.AddSerilog();
+        builder.Services.AddLogging();
+        
         return builder;
     }
 
@@ -95,10 +85,6 @@ public static class Extensions
             });
 
         builder.AddOpenTelemetryExporters();
-
-        //Registers OTLP log and trace exporters to send to Seq.
-        //builder.AddSeqEndpoint(connectionName: "seq");
-
         return builder;
     }
 
@@ -176,7 +162,7 @@ public static class Extensions
             {
                 var azureBusConfig =
                     configuration.GetRequiredSection("AzureServiceBus").Get<AzureServiceBusConfig>()
-                    ?? throw new Exception(
+                    ?? throw new MissingFieldException(
                         "AzureServiceBus configuration section is missing or invalid");
                 cfg.Host(azureBusConfig.ConnectionString);
                 if (consumerTypes.Length > 0)
