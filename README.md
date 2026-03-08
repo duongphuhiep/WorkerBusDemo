@@ -1,6 +1,18 @@
-# POC - sharing context accross DI boundary in a Multi-tenancy application
+# Proof Of Concept for a real project
 
-## Problem: sharing context accross DI boundary 
+This POC is a simplify imitation of a real project situation - see the *Target application architecture* section for more details. 
+
+The POC used the same stack tech as the later (Refit, MassTransit / Azure Service Bus, Serilog..) to demonstrates the solution for various problems:
+
+* Problem 1: Sharing context accross DI boundary in a Multi-tenancy application (see the details in the next section).
+* Problem 2: Delegate heavy tasks to external Worker via Azure Service Bus's Queue (no Pub/Sub) with MassTransit.
+* Problem 3: Instrument Telemetry data (Logs, Traces and Metrics) to Azure App Insights with Serilog.
+* Problem 4: Enriching logs with useful context data to make the logs more helpful for troubleshooting.
+  * Attaching TraceId to every log items, so that we can correlate all related logs of different services together in Azure App Insights.
+  * Attaching User name to logs items with [LoggingScope](WebApi/UsernameLoggingMiddleware.cs).
+  * Preventing over-size log messages with various Serilog's configuration and a custom Serilog's [TruncatingEnricher](WorkerBusDemo.ServiceDefaults/TruncatingEnricher.cs).
+
+## Problem 1: sharing context accross DI boundary in a Multi-tenancy application 
 
 ```C#
 public class AuthHeaderMiddleware(BearerTokenProvider bearerTokenProvider) : DelegatingHandler
@@ -76,11 +88,11 @@ ExternalService-->>-WebApi: BearerToken (string)
 WebApi->>+ExternalService: CreatePendingProduct(BearerToken, ClientContext)
 ExternalService-->>-WebApi: Product
 
-alt Sync Deployment
+alt Sync Deployment: Execute the heavy business logic directly in WebApi
     WebApi->>+ExternalService: DeployProduct(BearerToken, ClientContext, Product)
     ExternalService-->>-WebApi: DeploymentReport
 
-else Async Deployment
+else Async Deployment: Delegate the heavy business logic to the Worker
     WebApi->>Worker: ProductDeploymentRequestMessage<br>(PlatformId, EnvironmentId, ProductId) <br>(Azure Service Bus)
     Worker->>Worker: SetClientContextAsync(PlatformId, EnvironmentId)
     Worker->>+ExternalService: GetBearerToken
