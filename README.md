@@ -1,18 +1,28 @@
-# Proof Of Concept for a real project
+# Proof of Concept for a Real Project
 
-This POC is a simplify imitation of a real project situation - see the *Target application architecture* section for more details. 
+This POC is a simplified imitation of a real project situation. See the *Target application architecture* section for more details.
 
-The POC used the same stack tech as the later (Refit, MassTransit / Azure Service Bus, Serilog..) to demonstrates the solution for various problems:
+The POC uses the same tech stack as the target project (Refit, MassTransit / Azure Service Bus, Serilog) to demonstrate solutions for various problems:
 
-* Problem 1: Sharing context accross DI boundary in a Multi-tenancy application (see the details in the next section).
-* Problem 2: Delegate heavy tasks to external Worker via Azure Service Bus's Queue (no Pub/Sub) with MassTransit.
-* Problem 3: Instrument Telemetry data (Logs, Traces and Metrics) to Azure App Insights with Serilog.
-* Problem 4: Enriching logs with useful context data to make the logs more helpful for troubleshooting.
-  * Attaching TraceId to every log items, so that we can correlate all related logs of different services together in Azure App Insights.
-  * Attaching User name to logs items with [LoggingScope](WebApi/UsernameLoggingMiddleware.cs).
-  * Preventing over-size log messages with various Serilog's configuration and a custom Serilog's [TruncatingEnricher](WorkerBusDemo.ServiceDefaults/TruncatingEnricher.cs).
+**Problem 1**: Sharing context across DI boundaries in a multi-tenancy application (see details in the next section).
 
-## Problem 1: sharing context accross DI boundary in a Multi-tenancy application 
+**Problem 2**: Delegate heavy tasks to an external Worker via Azure Service Bus Queue (no Pub/Sub) with MassTransit.
+
+**Problem 3**: Instrument telemetry data (logs, traces, and metrics) to Azure Application Insights with Serilog.
+
+For any request to the **WebApi**, we should be able to visualize all access traces from **WebApi** to the **Worker** to the **ExternalApi** to the **Database** in Azure App Insights.
+
+![App Insight Trace](https://i.postimg.cc/kGC9PXtp/Screenshot-20260308-233107.png)
+
+**Problem 4**: Enriching logs with useful context data to facilitate troubleshooting.
+
+  * Attach TraceId to every log entry to correlate related logs across services in Azure Application Insights.
+  * Attach username to log entries with [LoggingScope](WebApi/UsernameLoggingMiddleware.cs).
+  * Prevent oversized log messages using Serilog configuration and a custom [TruncatingEnricher](WorkerBusDemo.ServiceDefaults/TruncatingEnricher.cs).
+
+![App Insights Logs](https://i.postimg.cc/rsXswq5D/Screenshot-20260308-231457.png)
+
+## Problem 1: Sharing context across DI boundaries in a multi-tenancy application 
 
 ```C#
 public class AuthHeaderMiddleware(BearerTokenProvider bearerTokenProvider) : DelegatingHandler
@@ -51,26 +61,26 @@ public static void ServiceRegistration(this IServiceCollection services)
 }
 ```
 
-- `AuthHeaderMiddleware` is a `HttpClient` middleware for outgoing Http requests.
-- `DeploymentConsumer` is the handler for the incoming MassTransit's Bus event.
-- When `DeploymentConsumer` calls external API, the `AuthHeaderMiddleware` will enrich the Http request with the `CurrentBearerToken`
-- The`CurrentBearerToken`is compute in the `DeploymentConsumer` based on the received event.
+- `AuthHeaderMiddleware` is an `HttpClient` middleware for outgoing HTTP requests.
+- `DeploymentConsumer` is the handler for incoming MassTransit bus events.
+- When `DeploymentConsumer` calls the external API, `AuthHeaderMiddleware` enriches the HTTP request with `CurrentBearerToken`.
+- `CurrentBearerToken` is computed in `DeploymentConsumer` based on the received event.
 
-Problem: the `AuthHeaderMiddleware` and `DeploymentConsumer` are created in 2 different scopes.
-- the `AuthHeaderMiddleware` is created by `HttpClientFactory`'s scope
-- the `DeploymentConsumer` is created by MassTransit event scope
+Problem: `AuthHeaderMiddleware` and `DeploymentConsumer` are created in different scopes:
+- `AuthHeaderMiddleware` is created by `HttpClientFactory`'s scope
+- `DeploymentConsumer` is created by MassTransit's event scope
 
-They didn't share the same `BearerTokenProvider`, so when `DeploymentConsumer` set the `CurrentBearerToken`, `AuthHeaderMiddleware` cannot "see" this value.
+They don't share the same `BearerTokenProvider`, so when `DeploymentConsumer` sets `CurrentBearerToken`, `AuthHeaderMiddleware` cannot access this value.
 
 ## Target application architecture
 
-The following architecture is a simplify version of a real project situation.
-The POC focus on solving the above problem:
+The following architecture is a simplified version of a real project situation.
+The POC focuses on solving the above problem:
 
-* The *WebApi* compute a `ClientContext` based on the incoming request
-* The *WebApi* uses this `ClientContext` in order to get a `BearerToken` from an external *authentication service* such as "Azure Entra ID" (`GetBearerToken` in the POC)
-* Then the *WebApi* would be able to perform some business logic with certain *external service* (`CreatePendingProduct` in the POC).
-* Then The *WebApi* sent a message to *Worker* to trigger heavy business logic (`DeployProduct` in the POC).
+* The *WebApi* computes a `ClientContext` based on the incoming request
+* The *WebApi* uses this `ClientContext` to get a `BearerToken` from an external authentication service such as "Azure Entra ID" (`GetBearerToken` in the POC)
+* Then the *WebApi* performs business logic with the external service (`CreatePendingProduct` in the POC)
+* Then the *WebApi* sends a message to the *Worker* to trigger heavy business logic (`DeployProduct` in the POC)
 
 ```mermaid
 sequenceDiagram
@@ -88,12 +98,12 @@ ExternalService-->>-WebApi: BearerToken (string)
 WebApi->>+ExternalService: CreatePendingProduct(BearerToken, ClientContext)
 ExternalService-->>-WebApi: Product
 
-alt Sync Deployment: Execute the heavy business logic directly in WebApi
+alt Sync Deployment: Execute heavy business logic directly in WebApi
     WebApi->>+ExternalService: DeployProduct(BearerToken, ClientContext, Product)
     ExternalService-->>-WebApi: DeploymentReport
 
-else Async Deployment: Delegate the heavy business logic to the Worker
-    WebApi->>Worker: ProductDeploymentRequestMessage<br>(PlatformId, EnvironmentId, ProductId) <br>(Azure Service Bus)
+else Async Deployment: Delegate heavy business logic to Worker
+    WebApi->>Worker: ProductDeploymentRequestMessage<br/>(PlatformId, EnvironmentId, ProductId)<br/>(Azure Service Bus)
     Worker->>Worker: SetClientContextAsync(PlatformId, EnvironmentId)
     Worker->>+ExternalService: GetBearerToken
     ExternalService-->>-Worker: BearerToken (string)
@@ -104,18 +114,28 @@ else Async Deployment: Delegate the heavy business logic to the Worker
 end
 ```
 
-The *Worker* and *WebApi* shared the same codes in the *Core* project, they both got the same problem:
-- the `DeploymentHandler` sets the `ClientContext` (based on the received Bus's event or the incoming Http request). 
+The *Worker* and *WebApi* share the same code in the *Core* project; they both have the same problem:
+- the `DeploymentHandler` sets the `ClientContext` (based on the received bus event or the incoming HTTP request). 
 But the `AuthHeaderMiddleware` cannot "see" this `ClientContext` because they are in different scopes.
 
 Solution: 
-- use `AsyncLocal` to store the `ClientContext` in the `ClientContextProvider` **singleton**.
-- the `ClientContextProvider` singleton is similar to the `HttpContextAccessor` singleton.
+- Use `AsyncLocal` to store the `ClientContext` in the `ClientContextProvider` **singleton**.
+- The `ClientContextProvider` singleton is similar to `HttpContextAccessor` singleton.
 
 While `HttpContextAccessor` can only be used in the *WebApi* project, the `ClientContextProvider` can be used in both *WebApi* and *Worker* projects.
 
 ## TODO
 
-* test more scenarios, to make sure that there is no other side effect with the `AsyncLocal` solution, such as memory leak, or wrong value in the `ClientContextProvider` when there are multiple concurrent requests/events.
-* try other solution: use `ConcurrentDictionary` to replace `AsyncLocal`.
+* Test more scenarios to ensure there are no side effects with the `AsyncLocal` solution, such as memory leaks or incorrect values in `ClientContextProvider` when there are multiple concurrent requests/events.
+* Try alternative solutions: use `ConcurrentDictionary` to replace `AsyncLocal`.
 
+## How to run
+
+Run/Debug the `WorkerBusDemo.AppHost`project.
+
+The first run will be very slow and probably failed, because it needs to pull the base SQL Server image. Once the image is pulled, subsequent runs will be much faster.
+
+## Conclusion
+
+The POC doesn't follow "Clean Architecture" or any architecture principle, so don't ask. 
+It focuses on solving the above problems with minimal idiomatic code.

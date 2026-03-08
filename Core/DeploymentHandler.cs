@@ -1,7 +1,9 @@
+using Core.Db;
 using Core.ExternalApiClient;
 using Core.ExternalApiClient.Dtos;
 using Core.Model;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ClientContext = Core.ExternalApiClient.Dtos.ClientContext;
@@ -13,7 +15,9 @@ public class DeploymentHandler(
     ClientContextProvider clientContextProvider,
     IExternalApi externalApi,
     ISendEndpointProvider senderProvider,
-    IOptions<AzureServiceBusConfig> azureServiceBusConfig)
+    IOptions<AzureServiceBusConfig> azureServiceBusConfig,
+    NorthwindDbContext dbContext
+    )
 {
     public async Task<DeploymentReport> DeploySync(string platformId, string environmentId, string? productId)
     {
@@ -27,6 +31,8 @@ public class DeploymentHandler(
             EnvironmentId = currentClientContext.EnvironmentId
         };
         
+        await dbContext.Employees.FirstAsync();
+        
         logger.LogInformation("currentClientContext Sync {platformId} {environmentId}", currentClientContext.PlatformId, currentClientContext.EnvironmentId);
         
         var product =
@@ -39,6 +45,8 @@ public class DeploymentHandler(
             Product = product
         });
 
+        await dbContext.Categories.FirstAsync();
+        
         //make sure everything matches together to confirm that the target architecture worked
         ValidateDeploymentReport(deploymentReport);
         

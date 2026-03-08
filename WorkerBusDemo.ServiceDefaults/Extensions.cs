@@ -47,9 +47,9 @@ public static class Extensions
         builder.Services.AddHttpLogging(cfg => cfg.CombineLogs = true);
         Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
             .Enrich.WithProperty("ApplicationName", builder.Environment.ApplicationName)
-            .Enrich.With(new TruncatingEnricher(100))
+            .Enrich.With(new TruncatingEnricher(200))
             // Truncate any string property longer than 100 characters
-            .Destructure.ToMaximumStringLength(100)
+            .Destructure.ToMaximumStringLength(200)
             // Limit how deep Serilog goes when destructuring complex objects
             .Destructure.ToMaximumDepth(5)
             // Limit how many items are in a collection (e.g., a List with 10k items)

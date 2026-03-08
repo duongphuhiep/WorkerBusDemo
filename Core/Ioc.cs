@@ -1,7 +1,9 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Core.Db;
 using Core.ExternalApiClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -25,6 +27,17 @@ public static class Ioc
         
         services.Configure<AzureServiceBusConfig>(
             configuration.GetSection("AzureServiceBus")
+        );
+        
+        //note: in "Clean Architecture", this registration would be in the Infrastructure layer.
+        //similarly, the NorthwindDbContext class would also be in the Infrastructure layer, not in the Core project.
+        //but for simplicity, we keep them here in the Core project.
+        services.AddDbContext<NorthwindDbContext>(options =>
+            options.UseSqlServer(
+                configuration.GetConnectionString("northwind")
+            ).EnableSensitiveDataLogging(), 
+            //the connectionString and all other options are always the same for all requests.
+            optionsLifetime: ServiceLifetime.Singleton
         );
     }
 

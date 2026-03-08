@@ -1,14 +1,21 @@
 <Project Sdk="Aspire.AppHost.Sdk/13.1.2">
 
     <ItemGroup>
-        <ProjectReference Include="..\ExternalApi\ExternalApi.csproj" />
-        <ProjectReference Include="..\WebApi\WebApi.csproj" />
-        <ProjectReference Include="..\Worker\Worker.csproj" />
+        <ProjectReference Include="..\ExternalApi\ExternalApi.csproj"/>
+        <ProjectReference Include="..\WebApi\WebApi.csproj"/>
+        <ProjectReference Include="..\Worker\Worker.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Aspire.Hosting.Seq" />
-      <PackageReference Include="Scalar.Aspire" />
+        <PackageReference Include="Aspire.Hosting.Seq"/>
+        <PackageReference Include="Scalar.Aspire"/>
+        <PackageReference Include="Aspire.Hosting.SqlServer"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Northwind.sql">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
     <PropertyGroup>
