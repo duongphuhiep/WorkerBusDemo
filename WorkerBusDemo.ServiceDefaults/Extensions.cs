@@ -47,6 +47,7 @@ public static class Extensions
         builder.Services.AddHttpLogging(cfg => cfg.CombineLogs = true);
         Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(builder.Configuration)
             .Enrich.WithProperty("ApplicationName", builder.Environment.ApplicationName)
+            .Enrich.With(new TruncatingEnricher(100))
             // Truncate any string property longer than 100 characters
             .Destructure.ToMaximumStringLength(100)
             // Limit how deep Serilog goes when destructuring complex objects
@@ -150,7 +151,7 @@ public static class Extensions
             .AddJsonFile(ConfigFileLocator.Find("appsettings.shared.json"), false, true)
             .AddJsonFile("appsettings.json", false, true)
             .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", true, true);
-        if (environment.IsDevelopment()) configuration.AddUserSecrets<SecretReference>(true);
+        if (environment.IsDevelopment()) configuration.AddUserSecrets<TruncatingEnricher>(true);
         configuration.AddEnvironmentVariables();
         configuration.AddCommandLine(args);
         //it must always be last to support config value substitution (Eg: "${Credentials:Password}") from any sources. 
