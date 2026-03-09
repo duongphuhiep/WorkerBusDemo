@@ -6,7 +6,6 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using ClientContext = Core.ExternalApiClient.Dtos.ClientContext;
 
 namespace Core;
 
@@ -25,7 +24,7 @@ public class DeploymentHandler(
         await clientContextProvider.SetClientContextAsync(platformId, environmentId);
 
         var currentClientContext = clientContextProvider.CurrentClientContext;
-        var clientContextDto = new ClientContext
+        var clientContextDto = new ClientContextDtos
         {
             PlatformId = currentClientContext.PlatformId,
             EnvironmentId = currentClientContext.EnvironmentId
@@ -60,7 +59,7 @@ public class DeploymentHandler(
         await clientContextProvider.SetClientContextAsync(platformId, environmentId);
 
         var currentClientContext = clientContextProvider.CurrentClientContext;
-        var clientContextDto = new ClientContext
+        var clientContextDto = new ClientContextDtos
         {
             PlatformId = currentClientContext.PlatformId,
             EnvironmentId = currentClientContext.EnvironmentId

@@ -124,11 +124,6 @@ Solution:
 
 While `HttpContextAccessor` can only be used in the *WebApi* project, the `ClientContextProvider` can be used in both *WebApi* and *Worker* projects.
 
-## TODO
-
-* Test more scenarios to ensure there are no side effects with the `AsyncLocal` solution, such as memory leaks or incorrect values in `ClientContextProvider` when there are multiple concurrent requests/events.
-* Try alternative solutions: use `ConcurrentDictionary` to replace `AsyncLocal`.
-
 ## How to run
 
 Run/Debug the `WorkerBusDemo.AppHost`project.

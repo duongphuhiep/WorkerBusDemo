@@ -20,10 +20,10 @@ public interface IExternalApiConnector
 public interface IExternalApi
 {
     [Put("/product")]
-    Task<Product> CreatePendingProduct(ClientContext clientContext);
+    Task<Product> CreatePendingProduct(ClientContextDtos clientContextDtos);
 
     [Post("/queryPendingProduct/{productId}")]
-    Task<Product> GetPendingProduct(string productId, ClientContext clientContext);
+    Task<Product> GetPendingProduct(string productId, ClientContextDtos clientContextDtos);
 
     [Post("/deploy")]
     Task<DeploymentReport> DeployProduct(DeploymentRequest deploymentRequest);

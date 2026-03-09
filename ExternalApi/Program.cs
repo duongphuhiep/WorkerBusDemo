@@ -29,7 +29,7 @@ app.MapGet("bearerToken/{platformId}/{environmentId}",
             throw new BadHttpRequestException("UserAgent is invalid");
         }
 
-        if (platformId == "root")
+        if (platformId.StartsWith("root"))
         {
             throw new UnauthorizedAccessException("Platform not accessible");
         }
@@ -57,7 +57,7 @@ app.MapPut("product", ([FromHeader(Name = "Authorization")] string bearerToken,
         return Results.Unauthorized();
     }
 
-    if (clientContext.EnvironmentId == "readonly")
+    if (clientContext.EnvironmentId.StartsWith("readonly"))
     {
         throw new InvalidOperationException(
             $"Unable to create product for the environment {clientContext.EnvironmentId}");

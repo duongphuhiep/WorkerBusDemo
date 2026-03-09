@@ -1,8 +1,9 @@
 <Solution>
-    <Project Path="Core/Core.csproj"/>
-    <Project Path="ExternalApi/ExternalApi.csproj"/>
-    <Project Path="WebApi/WebApi.csproj"/>
-    <Project Path="Worker/Worker.csproj"/>
-    <Project Path="WorkerBusDemo.AppHost/WorkerBusDemo.AppHost.csproj"/>
-    <Project Path="WorkerBusDemo.ServiceDefaults/WorkerBusDemo.ServiceDefaults.csproj"/>
+    <Project Path="Core/Core.csproj" />
+    <Project Path="ExternalApi/ExternalApi.csproj" />
+    <Project Path="TestProject1/TestProject1.csproj" />
+    <Project Path="WebApi/WebApi.csproj" />
+    <Project Path="Worker/Worker.csproj" />
+    <Project Path="WorkerBusDemo.AppHost/WorkerBusDemo.AppHost.csproj" />
+    <Project Path="WorkerBusDemo.ServiceDefaults/WorkerBusDemo.ServiceDefaults.csproj" />
 </Solution>

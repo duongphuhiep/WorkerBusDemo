@@ -59,6 +59,12 @@
     <PackageVersion Include="Serilog.Sinks.Seq" Version="9.0.0" />
     <PackageVersion Include="SerilogTracing" Version="2.3.1" />
     <PackageVersion Include="SerilogTracing.Expressions" Version="2.3.1" />
+    <!-- Test -->
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="Shouldly" Version="4.3.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
     <!-- ToolsPack -->
     <PackageVersion Include="ToolsPack.Config" Version="4.0.0" />
     <PackageVersion Include="ToolsPack.String" Version="3.1.3" />
